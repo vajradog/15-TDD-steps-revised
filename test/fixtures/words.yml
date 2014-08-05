@@ -1,0 +1,9 @@
+--- 
+false: 
+  eng: "no"
+  id: 2
+  pl: nie
+true: 
+  eng: "yes"
+  id: 1
+  pl: tak
