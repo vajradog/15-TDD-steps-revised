@@ -6,28 +6,29 @@ Let's begin
 ----------
 ### 1. Create a new Rails application
 
+```
 $ rails new my_app
 
 $ cd my_app
-
-
-## Model
+```
 
 ### 2. Create a Word class with corresponding unit test
+```
 $ rails g model Word
 
-$ rake *~> should now run fine*
+```
 
 ### 3. Prepare your database
+```
 $ rake db:migrate
 
-$ rake *~> should now run fine*
-
+$ rake #should now run fine
+```
 
 ### 4. Write a unit test for the Word class.
 Edit the test/models/word_test.rb
 
-``` ruby
+```
 test 'word is in both English and Polish' do 
     word = Word.new eng:'never', pl:'nigdy'
     assert_equal 'never', word.eng
@@ -35,15 +36,19 @@ test 'word is in both English and Polish' do
   end
 ```
 
-$ rake *~> should throw an error due to missing columns in words table*
+```
+$ rake #should throw an error due to missing columns in words table
+```
 
 ### 5. Add columns to your table
 
+```
 $ rails g migration add_eng_and_pl_to_words
 
+```
 From your db/migrate folder open the new migration file you just created and add the following columns like so:
 
-```ruby
+```
 class AddEngAndPlToWords < ActiveRecord::Migration
   def change
     add_column :words, :eng, :string
@@ -51,13 +56,15 @@ class AddEngAndPlToWords < ActiveRecord::Migration
   end
 end
 ```
+```
+$ rake db:migrate 
 
-$ rake db:migrate *~> to prepare the schema so we can add create some words*
-
-$ rake *~> The error is gone now*
+$ rake #error will go away
+```
 
 Enter rails console 
 
+```
 $ rails c
 
 $ Word.create(eng:'yes', pl:'tak')
@@ -66,19 +73,21 @@ $ Word.create(eng:'no', pl:'nie')
 
 $ Word.create(eng:'everything', pl:'wszystko')
 
+```
+
 This will create the three words with its Polish translation.
 
-$ exit  *~> exit the console*
+```
+$ exit  #exit the console
 
-$ rake  *~> should now succeed with the following:*
+$ rake  #should now run fine
 
-*'1 tests, 2 assertions, 0 failures, 0 errors'*
-
+```
 ### 6. Fixtures and test for word.random. 
 
 Edit test file again. The test/models/word_test.rb file should now look like this:
 
-```ruby
+```
 require 'test_helper'
 
 class WordTest < ActiveSupport::TestCase
@@ -100,8 +109,7 @@ end
 
 Edit the words.yml file (in the fixtures folder) to look like this:
 
-```ruby
---- 
+```
 false: 
   eng: "no"
   id: 2
@@ -114,12 +122,13 @@ true:
 
 Be careful with the spacing. YML files are like crazy annoying people, they'll yell at you if you miss a space. Head over to <http://yamllint.com/> and validate your yaml if unsure or learn more here: <http://ess.khhq.net/wiki/YAML_Tutorial>
 
-$ rake  *~> should throw an error because of undefined method 'random'*
-
+```
+$ rake  #should throw an error because of undefined method 'random'
+```
 ### 7. Implement the Word.random method
 In your app/models/word.rb implement the word.random method like so:
 
-```ruby
+```
 class Word < ActiveRecord::Base
   def self.random
     all = Word.all
@@ -128,20 +137,23 @@ class Word < ActiveRecord::Base
 end
 
 ```
+```
+$ rake  #should now run fine
+```
 
-$ rake  *~> test should pass*
 
-## Controller
 
 ### 8. Generate the Words controller with a 'learn' action
+```
 $ rails g controller Words learn
+```
 
 ### 9. Write a test for the learn method.
 Just as there is one-to-one ratio between unit tests and models, so there is between functional tests and controllers. The Controller's responsibility is to retrieve objects from the Model layer and pass them to the View. Let's test the View part first. We use the 'assigns' collection which contains all the objects passed to the View.
 
 In the test/controllers/words_controller_test.rb
 
-```ruby
+```
 require 'test_helper'
 
 class WordsControllerTest < ActionController::TestCase
@@ -151,14 +163,15 @@ class WordsControllerTest < ActionController::TestCase
   end
 end
 ```
-
-$ rake *~> test should have 1 failure* 
+```
+$ rake #test will have 1 failure
+```
 
 ### 10. Make the Test Pass
 
 In your app/controllers/words_controller.rb
 
-```ruby
+```
 class WordsController < ApplicationController
   def learn
     @word = Word.new
@@ -166,14 +179,13 @@ class WordsController < ApplicationController
 end
 ```
 
-## Mocha introduction
 
 ### 11. Write more tests in the words_controller_test
 How can we test that the controller uses the Word.random method? We don't want to duplicate the tests for the Word.random method. Mocks to the rescue! We will only test that the controller calls the Word.random method. The returned value will be faked with a prepared word. Let's install the mocha framework.
 
 In your Gemfile 
 
-```ruby
+```
 group :test, :development do
   gem 'mocha'
 end
@@ -181,7 +193,7 @@ end
 
 We can now use 'expects' and 'returns' methods. 'expects' is used for setting an expectation on an object or a class. In this case we expect that the 'random' method will be called. We also set a return value by using 'returns' method. Setting a return value means faking (stubbing) the real method. The real Word.random won't be called. If an expectation isn't met; the test fails.
 
-```ruby
+```
 require 'test_helper'
 
 class WordsControllerTest < ActionController::TestCase
@@ -193,27 +205,27 @@ class WordsControllerTest < ActionController::TestCase
   end
 end
 ```
-
-$ rake  *~> should now fail*
-
+```
+$ rake  #should now run fine
+```
 ### 12. Rewrite the implementation
 Edit words_controller.rb
 
-```ruby
+```
 def learn
   @word = Word.random
 end
 ```
-$ rake  *~> should now pass*
+```
+$ rake  #should now run fine
+```
 
 
-
-## View
 
 ### 13. Test that a word is displayed: Extend the existing test with assert_tag calls.
 Edit words_controller_test.rb
 
-```ruby
+```
 test "learn method passes a random word" do
   random_word = Word.new(pl:'czesc', eng:'hello')
   Word.expects(:random).returns(random_word)
@@ -233,11 +245,14 @@ In app/views/words/learn.html.erb
   <%= @word.pl %>
 </div>
 ```
-$ rake  *~> should now pass*
+```
+$ rake #should now run fine
+```
 
 ### 15. Manual testing
+```
 $ rails server
-
+```
 Go to http://localhost:3000/words/learn 
 Refresh several times to see different words.
 
